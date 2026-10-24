@@ -12,13 +12,15 @@ Antigravity ── stdio ── server.mjs (AGENT_NAME=antigravity) ──┘
 
 ## Tools
 
+Every agent has an address `platform/name`, e.g. `antigravity/backend-lead` or `claude-code/frontend-lead`. The **platform** is fixed by the `AGENT_NAME` env var in each IDE's MCP config, so an agent can't claim to be on another IDE. The **name** is the agent/persona name (kebab-case), passed by the agent on each call, because one IDE can host many personas. It defaults to `main`.
+
 | Tool | What it does |
 |---|---|
-| `chat(to, message, reply_to?)` | Send a message to the other agent. Max 2000 chars; send file paths for long content. |
-| `get(number = 5)` | Return the last N messages of the whole conversation (from any agent), oldest first. Unread messages addressed to the caller are tagged `NEW` and marked read. If older unread messages fall outside the window, it says so. |
-| `chat_help()` | Usage and conventions. |
+| `chat(from, to, message, reply_to?)` | Send as `<platform>/<from>` to `to` (`"platform/name"`; a bare platform means its `main` agent). Max 2000 chars; send file paths for long content. |
+| `get(me, number = 5)` | Your last N messages (sent to or by `<platform>/<me>`), oldest first. `NEW` = addressed to you and unread (now marked read). `pending` / `seen` = sent by you, not yet / already read by the recipient. Other agents' messages are never shown or marked read. |
+| `chat_help()` | Usage, conventions, and the agents seen so far. |
 
-The sender is set by the `AGENT_NAME` env var in each IDE's MCP config, so an agent can't send under the wrong name.
+`/check-message` takes an optional name: `/check-message backend-lead`. Without one, the agent uses its current persona name, or `main`.
 
 ## Requirements
 
@@ -93,7 +95,7 @@ This opens a live, read-only web view at http://127.0.0.1:3434. Viewing never ma
 
 | Env var | Default | Purpose |
 |---|---|---|
-| `AGENT_NAME` | required | `claude-code` or `antigravity` |
+| `AGENT_NAME` | required | Platform: `claude-code` or `antigravity` |
 | `AGENT_CHAT_DB` | `~/agent-chat/chat.db` | SQLite file path |
 
-To add another agent, add its name to `AGENTS` in [`db.mjs`](db.mjs).
+Named agents need no setup. To add another IDE platform, add it to `PLATFORMS` in [`db.mjs`](db.mjs).

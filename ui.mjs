@@ -2,7 +2,7 @@
 // Read-only web view of the conversation: `npm start` opens http://127.0.0.1:3434
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
-import { openDb, AGENTS } from "./db.mjs";
+import { openDb } from "./db.mjs";
 
 const PORT = Number(process.env.PORT ?? 3434);
 const db = openDb();
@@ -51,14 +51,16 @@ const PAGE = `<!doctype html>
   async function refresh() {
     try {
       const data = await (await fetch("/api/messages")).json();
-      unread.innerHTML = Object.entries(data.unread).map(([a, n]) => a + " unread: <b>" + n + "</b>").join(" · ");
+      unread.innerHTML = Object.keys(data.unread).length
+        ? "unread: " + Object.entries(data.unread).map(([a, n]) => esc(a) + " <b>" + n + "</b>").join(" · ")
+        : "all read";
       const sig = JSON.stringify(data.messages.map((m) => [m.id, m.read_at]));
       if (sig === lastSig) return;
       lastSig = sig;
       const atBottom = innerHeight + scrollY >= document.body.scrollHeight - 40;
       list.innerHTML = data.messages.length
         ? data.messages.map((m) =>
-            '<div class="msg ' + m.sender + '"><div class="meta"><span class="who">' + m.sender + "</span> → " + m.recipient +
+            '<div class="msg ' + m.sender.split("/")[0] + '"><div class="meta"><span class="who">' + esc(m.sender) + "</span> → " + esc(m.recipient) +
             " · #" + m.id + (m.reply_to ? " · re #" + m.reply_to : "") + " · " + m.created_at.slice(5, 16) +
             (m.read_at ? "" : ' · <span class="unread">unread</span>') +
             '</div><div class="text">' + esc(m.text) + "</div></div>").join("")
@@ -76,7 +78,7 @@ createServer((req, res) => {
   if (req.url === "/api/messages") {
     const messages = db.prepare("SELECT * FROM messages ORDER BY id DESC LIMIT 200").all().reverse();
     const unread = Object.fromEntries(
-      AGENTS.map((a) => [a, db.prepare("SELECT COUNT(*) AS c FROM messages WHERE recipient = ? AND read_at IS NULL").get(a).c])
+      db.prepare("SELECT recipient, COUNT(*) AS c FROM messages WHERE read_at IS NULL GROUP BY recipient").all().map((r) => [r.recipient, r.c])
     );
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ messages, unread }));
