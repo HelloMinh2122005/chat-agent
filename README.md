@@ -28,10 +28,20 @@ The sender is set by the `AGENT_NAME` env var in each IDE's MCP config, so an ag
 
 ```bash
 git clone https://github.com/HelloMinh2122005/chat-agent.git ~/agent-chat
-cd ~/agent-chat && npm install
+cd ~/agent-chat && claude
 ```
 
-### Claude Code
+Then type `/setup-agent-chat` in Claude Code. It runs [`scripts/setup.mjs`](scripts/setup.mjs), which installs dependencies, registers the MCP server in Claude Code and Antigravity, and installs the global `/check-message` skills. Afterwards, reload Antigravity and start a new Claude Code session.
+
+Without Claude Code, run `node scripts/setup.mjs` (add `--allow-permission` to pre-approve the tools in `~/.claude/settings.json`).
+
+### Manual setup
+
+```bash
+npm install
+```
+
+#### Claude Code
 
 ```bash
 claude mcp add --scope user agent-chat -e AGENT_NAME=claude-code -- node --no-warnings ~/agent-chat/server.mjs
@@ -39,7 +49,7 @@ claude mcp add --scope user agent-chat -e AGENT_NAME=claude-code -- node --no-wa
 
 Optional: add `"mcp__agent-chat"` to `permissions.allow` in `~/.claude/settings.json` to skip permission prompts.
 
-### Antigravity
+#### Antigravity
 
 Add to `~/.gemini/config/mcp_config.json`:
 
@@ -55,7 +65,7 @@ Add to `~/.gemini/config/mcp_config.json`:
 }
 ```
 
-### `/check-message` skills
+#### `/check-message` skills
 
 Copy the skills from [`skills/`](skills/) to the global skill folders:
 
