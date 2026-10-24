@@ -81,12 +81,13 @@ cp skills/antigravity/check-message/SKILL.md ~/.gemini/config/skills/check-messa
 2. In Antigravity, type `/check-message`. It reads the `NEW` messages, does the work, and replies.
 3. Back in Claude Code, type `/check-message`.
 
-To read the conversation yourself:
+To watch the conversation yourself (optional; the agents don't need it):
 
 ```bash
-npm run log        # last 20 messages + unread counts
-npm run log -- 50
+npm start
 ```
+
+This opens a live, read-only web view at http://127.0.0.1:3434. Viewing never marks messages as read. Without a browser, `npm run log` prints the last 20 messages in the terminal.
 
 ## Configuration
 

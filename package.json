@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Shared message queue between IDE agents (Claude Code, Antigravity) over stdio MCP + SQLite",
   "scripts": {
+    "start": "node --no-warnings ui.mjs",
     "log": "node --no-warnings log.mjs"
   },
   "dependencies": {
